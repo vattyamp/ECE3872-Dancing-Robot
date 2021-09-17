@@ -16,7 +16,7 @@
 
 #define rest 0
 
-#define mouthAnglePerPitch (high_C)) * 2
+#define mouthAnglePerPitch (high_C))
 
 #define Octave 6
 
@@ -83,6 +83,7 @@ void loop()
 
         if (notes[n] != rest){
           mouth.write(180 * (notes[n] / mouthAnglePerPitch);
+          //Serial.print(180 * (notes[n] / mouthAnglePerPitch);
         }
         tone(speakerPIN, notes[n], durations[n]);
         delay(durations[n]);
