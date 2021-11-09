@@ -51,7 +51,7 @@ int inputA=6;
 int inputB=7;
 int inputC=8;
 int inputD=11;
-int octaveScalar = 1;
+float octaveScalar = 1.0;
 
 
 #define TempoCal 512
@@ -177,7 +177,7 @@ static int detect_tempo_func(struct pt* pt) {
         }
       } else {
         tempoBPS = ((float) analogRead(tempoPot) / 1024.0) * 100;
-        Serial.println(tempoBPS);
+        //Serial.println(tempoBPS);
       }
       int timer = millis();
       PT_WAIT_UNTIL(pt, millis() - timer > 2000);
@@ -189,7 +189,7 @@ static int detect_tempo_func(struct pt* pt) {
 static float change_seven_segment_display(float octaveScalar) {
     valeurLue = analogRead(Capteur);
     tension = map(valeurLue,0,1023,0,50);
-    Serial.println(tension);
+    //Serial.println(tension);
     
     if (tension >=0 && tension < 5) { //Number 0
       digitalWrite(inputA,LOW);
@@ -281,6 +281,11 @@ void loop()
         tempoBPS = ((float) analogRead(tempoPot) / 1024.0) * 25;
       }
       int currDuration = ((float) beats[n] / (float) tempoBPS) * 1000.0;
+      Serial.print("note:");
+      Serial.println(notes[n]);
+      Serial.print("OctaveScalar:");
+      Serial.println(octaveScalar);
+      
       tone(speakerPIN, (float) (notes[n] * octaveScalar), currDuration);
       delay(currDuration);
   }
