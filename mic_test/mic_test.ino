@@ -67,33 +67,26 @@ void setup()
    Serial.begin(9600);
   pinMode(ledPin, OUTPUT);
   pinMode(pbPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(pbPin), toggle_failsafe, FALLING);
-}
-
-void toggle_failsafe() {
-  failSafe = !failSafe;
-  delay(1000);
 }
 
 static int detect_tempo_func(struct pt* pt) {
     PT_BEGIN(pt);
-    while(true) {
-      if (failSafe == LOW) {
+    while(duration == 0) {
         int val;
         for(int i = 0; i < SAMPLES; i++)
         {
-          val = analogRead(0); // 0-1023
+          val = analogRead(3); // 0-1023
           data[i] = (char)(val/4 - 128); // store as char
           im[i] = 0; // init all as 0
         }
         // run FFT
-        fix_fft(inputTest, im, 7, 0);
+        fix_fft(data, im, 7, 0);
     
         // extract absolute value of data only, for 64 results
         fftMax = -10000;
         for(int i = 0; i < SAMPLES/2; i++)
         {
-          barht[i] = (int)sqrt(inputTest[i] * inputTest[i] + im[i] * im[i]);
+          barht[i] = (int)sqrt(data[i] * data[i] + im[i] * im[i]);
           if (barht[i] > fftMax) {
             fftMax = i;
           }
@@ -107,10 +100,6 @@ static int detect_tempo_func(struct pt* pt) {
             isTimerStarted = false;
           }
         }
-      } else {
-        tempoBPS = ((float) analogRead(tempoPot) / 1024.0) * 100;
-        Serial.println(tempoBPS);
-      }
       int timer = millis();
       PT_WAIT_UNTIL(pt, millis() - timer > 2000);
       
@@ -121,6 +110,4 @@ static int detect_tempo_func(struct pt* pt) {
 void loop() 
 {
  detect_tempo_func(&detect_tempo);
- digitalWrite(ledPin, failSafe);
- 
 }

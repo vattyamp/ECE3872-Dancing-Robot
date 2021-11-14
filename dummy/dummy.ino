@@ -7,7 +7,7 @@
 #include <Servo.h>
 #include <stdio.h>
 #include <math.h>
-#include "fix_fft.h"
+//#include "fix_fft.h"
 #include <pt.h>
 
 #define SAMPLES 128
@@ -19,7 +19,7 @@ char inputTest[SAMPLES];
 const int sampleWindow = 250; // Sample window width in mS (250 mS = 4Hz)
 unsigned int knock;
 int ledPin = 4;
-int pbPin = 3;
+int pbPin = 2;
 volatile byte failSafe = LOW;
 
 float fftMax;
@@ -32,7 +32,7 @@ int barht[SAMPLES];
 int startTime;
 int duration;
 boolean isTimerStarted;
-float tempoBPS;
+int tempoBPS;
 
 
 
@@ -95,8 +95,9 @@ void setup()
 {
   
   surfer.attach(10);
+  surfer.write(0);
   sail.attach(9);
-  sail.write(100);
+  sail.write(90);
   Serial.begin(9600);
   PT_INIT(&detect_tempo);
   pinMode(ledPin, OUTPUT);
@@ -141,49 +142,6 @@ static int play_audio(struct pt* pt) {
     PT_WAIT_UNTIL(pt, millis() - timer > 2000);
   }
   PT_END(pt);
-}
-
-static int detect_tempo_func(struct pt* pt) {
-    PT_BEGIN(pt);
-    while(true) {
-      if (failSafe == LOW || false) {
-        int val;
-        for(int i = 0; i < SAMPLES; i++)
-        {
-          val = analogRead(0); // 0-1023
-          data[i] = (char)(val/4 - 128); // store as char
-          im[i] = 0; // init all as 0
-        }
-        // run FFT
-        fix_fft(inputTest, im, 7, 0);
-    
-        // extract absolute value of data only, for 64 results
-        fftMax = -10000;
-        for(int i = 0; i < SAMPLES/2; i++)
-        {
-          barht[i] = (int)sqrt(inputTest[i] * inputTest[i] + im[i] * im[i]);
-          if (barht[i] > fftMax) {
-            fftMax = i;
-          }
-        }
-        if (abs((fftMax * 1000) - C) < 2) {
-          if (!isTimerStarted) {
-            startTime = millis();
-            isTimerStarted = true;
-          } else {
-            duration = millis() - startTime;
-            isTimerStarted = false;
-          }
-        }
-      } else {
-        tempoBPS = ((float) analogRead(tempoPot) / 1024.0) * 100;
-        //Serial.println(tempoBPS);
-      }
-      int timer = millis();
-      PT_WAIT_UNTIL(pt, millis() - timer > 2000);
-      
-    }
-    PT_END(pt);
 }
 
 static float change_seven_segment_display(float octaveScalar) {
@@ -269,24 +227,6 @@ static float change_seven_segment_display(float octaveScalar) {
 }
 
 void loop()
-{   
-//  detect_tempo_func(&detect_tempo);
-  for (int n = 0; n < songLength && playAudio; n++) 
-  {
-      octaveScalar = change_seven_segment_display(octaveScalar);
-      if (notes[n] != rest){
-        surfer.write(100 * (notes[n] / surferAnglePerPitch);
-      }
-      if (failSafe) {
-        tempoBPS = ((float) (analogRead(tempoPot) + 1) / 1024.0) * 25;
-      }
-      int currDuration = ((float) beats[n] / max(tempoBPS, 1.0)) * 1000.0;
-      Serial.print("note:");
-      Serial.println(notes[n]);
-      Serial.print("OctaveScalar:");
-      Serial.println(octaveScalar);
-      
-      tone(speakerPIN, (float) (notes[n] * octaveScalar), currDuration);
-      delay(currDuration);
-  }
+{
+  Serial.println(failSafe);
 }
